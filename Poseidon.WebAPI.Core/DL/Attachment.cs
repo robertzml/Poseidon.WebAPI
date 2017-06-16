@@ -22,16 +22,40 @@ namespace Poseidon.WebAPI.Core.DL
         public string Name { get; set; }
 
         /// <summary>
+        /// 文件名
+        /// </summary>
+        [Display(Name = "文件名")]
+        public string FileName { get; set; }
+
+        /// <summary>
+        /// 扩展名
+        /// </summary>
+        [Display(Name = "扩展名")]
+        public string Extension { get; set; }
+
+        /// <summary>
         /// 文件类型
         /// </summary>
         [Display(Name = "文件类型")]
-        public string FileType { get; set; }
+        public string ContentType { get; set; }
 
         /// <summary>
-        /// 路径
+        /// 相对路径，不含根目录
         /// </summary>
-        [Display(Name = "路径")]
+        [Display(Name = "相对路径")]
         public string Path { get; set; }
+
+        /// <summary>
+        /// 文件大小
+        /// </summary>
+        [Display(Name = "文件大小")]
+        public int Size { get; set; }
+
+        /// <summary>
+        /// 上传时间
+        /// </summary>
+        [Display(Name = "上传时间")]
+        public DateTime UploadTime { get; set; }
         #endregion //Property
     }
 }
