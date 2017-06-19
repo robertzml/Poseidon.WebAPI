@@ -30,10 +30,11 @@ namespace Poseidon.WebAPI.Client.Utility
                 filePath = filePath.Substring(1, filePath.Length - 2);
 
             var filename = Path.GetFileName(filePath);
+            var name = Guid.NewGuid().ToString();
             var extension = Path.GetExtension(filePath);
             var contentType = headers.ContentType.MediaType;
 
-            return filename;
+            return name + extension;
         }
         #endregion //Method
     }

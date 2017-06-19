@@ -56,6 +56,12 @@ namespace Poseidon.WebAPI.Core.DL
         /// </summary>
         [Display(Name = "上传时间")]
         public DateTime UploadTime { get; set; }
+
+        /// <summary>
+        /// 备注
+        /// </summary>
+        [Display(Name = "备注")]
+        public string Remark { get; set; }
         #endregion //Property
     }
 }
