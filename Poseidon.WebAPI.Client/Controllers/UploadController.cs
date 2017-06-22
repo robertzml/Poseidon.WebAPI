@@ -13,6 +13,8 @@ namespace Poseidon.WebAPI.Client.Controllers
 {
     using Poseidon.Common;
     using Poseidon.WebAPI.Client.Utility;
+    using Poseidon.WebAPI.Core.BL;
+    using Poseidon.WebAPI.Core.DL;
 
     /// <summary>
     /// 上传控制器
@@ -36,6 +38,26 @@ namespace Poseidon.WebAPI.Client.Controllers
 
             return root;
         }
+
+        private List<string> SaveAttchment(PoseidonMultipartFormDataStreamProvider provider)
+        {
+            List<string> returns = new List<string>();
+            
+            foreach (MultipartFileData file in provider.FileData)
+            {
+                Attachment attachment = new Attachment();
+
+                attachment.Name = file.Headers.ContentDisposition.Name;
+                attachment.FileName = file.LocalFileName;
+
+                IEnumerable<string> remarks;
+                file.Headers.TryGetValues("remark", out remarks);
+                
+                int a = remarks.Count();
+            }
+
+            return returns;
+        }
         #endregion //Function
 
         #region Action
@@ -55,12 +77,18 @@ namespace Poseidon.WebAPI.Client.Controllers
                 // Read the form data.
                 await Request.Content.ReadAsMultipartAsync(provider);
 
+                SaveAttchment(provider);
+
                 List<string> returns = new List<string>();
                 // This illustrates how to get the file names.
                 foreach (MultipartFileData file in provider.FileData)
                 {                    
                     Trace.WriteLine(file.Headers.ContentDisposition.FileName);
                     Trace.WriteLine("Server file path: " + file.LocalFileName);
+
+                    //file.Headers.ContentDisposition.n
+                    long length = file.Headers.ContentLength ?? 0;
+
 
                     returns.Add(file.LocalFileName);
                 }

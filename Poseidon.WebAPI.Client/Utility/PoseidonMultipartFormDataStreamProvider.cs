@@ -21,6 +21,11 @@ namespace Poseidon.WebAPI.Client.Utility
         #endregion //Constructor
 
         #region Method
+        /// <summary>
+        /// 获取本地文件名
+        /// </summary>
+        /// <param name="headers"></param>
+        /// <returns></returns>
         public override string GetLocalFileName(HttpContentHeaders headers)
         {
             string filePath = headers.ContentDisposition.FileName;
