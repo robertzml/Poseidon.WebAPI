@@ -43,19 +43,25 @@ namespace Poseidon.WebAPI.Core.DL
         /// 相对路径，不含根目录
         /// </summary>
         [Display(Name = "相对路径")]
-        public string Path { get; set; }
+        public string Folder { get; set; }
 
         /// <summary>
-        /// 文件大小
+        /// 文件大小(字节)
         /// </summary>
         [Display(Name = "文件大小")]
-        public int Size { get; set; }
+        public long Size { get; set; }
 
         /// <summary>
         /// 上传时间
         /// </summary>
         [Display(Name = "上传时间")]
         public DateTime UploadTime { get; set; }
+
+        /// <summary>
+        /// 文件HASH
+        /// </summary>
+        [Display(Name = "文件HASH")]
+        public string MD5Hash { get; set; }
 
         /// <summary>
         /// 备注

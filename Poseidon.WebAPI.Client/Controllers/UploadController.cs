@@ -11,6 +11,7 @@ using System.IO;
 
 namespace Poseidon.WebAPI.Client.Controllers
 {
+    using Poseidon.Base.Framework;
     using Poseidon.Common;
     using Poseidon.WebAPI.Client.Utility;
     using Poseidon.WebAPI.Core.BL;
@@ -23,40 +24,60 @@ namespace Poseidon.WebAPI.Client.Controllers
     {
         #region Function
         /// <summary>
-        /// 生成保存路径
+        /// 生成保存文件夹
         /// </summary>
         /// <returns></returns>
         private string GeneratePath()
-        {
-            string path = AppConfig.GetAppSetting("UploadPath");
-            string date = string.Format("{0}-{1:D2}", DateTime.Now.Year, DateTime.Now.Month);
+        {           
+            string folder = string.Format("{0}-{1:D2}", DateTime.Now.Year, DateTime.Now.Month);
 
-            var root = HttpContext.Current.Server.MapPath("~" + path + "//" + date);
-
-            if (!Directory.Exists(root))
-                Directory.CreateDirectory(root);
-
-            return root;
+            return folder;
         }
 
-        private List<string> SaveAttchment(PoseidonMultipartFormDataStreamProvider provider)
+        /// <summary>
+        /// 保存附件信息到数据库
+        /// </summary>
+        /// <param name="provider"></param>
+        /// <param name="folder">保存文件夹</param>
+        /// <returns></returns>
+        private List<string> SaveAttchment(PoseidonMultipartFormDataStreamProvider provider, string folder)
         {
-            List<string> returns = new List<string>();
-            
+            List<string> results = new List<string>();
+
             foreach (MultipartFileData file in provider.FileData)
             {
                 Attachment attachment = new Attachment();
 
-                attachment.Name = file.Headers.ContentDisposition.Name;
-                attachment.FileName = file.LocalFileName;
+                attachment.Name = file.Headers.GetValues("name").ToList().First();
+                attachment.FileName = Path.GetFileName(file.LocalFileName);
+                attachment.Extension = Path.GetExtension(file.LocalFileName);
+                attachment.ContentType = file.Headers.ContentType.MediaType;
+                attachment.UploadTime = DateTime.Now;
+                attachment.Size = new FileInfo(file.LocalFileName).Length;
+                attachment.Folder = folder;
+                attachment.MD5Hash = Hasher.GetFileMD5Hash(file.LocalFileName);
 
-                IEnumerable<string> remarks;
-                file.Headers.TryGetValues("remark", out remarks);
-                
-                int a = remarks.Count();
+                if (file.Headers.Contains("remark"))
+                    attachment.Remark = file.Headers.GetValues("remark").ToList().First();
+                else
+                    attachment.Remark = "";
+
+                if (file.Headers.Contains("md5hash"))
+                {
+                    string md5 = file.Headers.GetValues("md5hash").ToList().First();
+
+                    if (attachment.MD5Hash != md5)
+                    {
+                        results.Add("文件哈希计算不匹配");
+                        continue;
+                    }
+                }
+
+                var attchment = BusinessFactory<AttachmentBusiness>.Instance.Create(attachment);
+                results.Add(attachment.Id);
             }
 
-            return returns;
+            return results;
         }
         #endregion //Function
 
@@ -69,29 +90,22 @@ namespace Poseidon.WebAPI.Client.Controllers
                 throw new HttpResponseException(HttpStatusCode.UnsupportedMediaType);
             }
 
-            var root = GeneratePath(); 
-            var provider = new PoseidonMultipartFormDataStreamProvider(root);
+            string root = AppConfig.GetAppSetting("UploadPath");
+            var folder = GeneratePath();
+
+            var path = HttpContext.Current.Server.MapPath("~" + root + "//" + folder);
+
+            if (!Directory.Exists(root))
+                Directory.CreateDirectory(root);
+
+            var provider = new PoseidonMultipartFormDataStreamProvider(path);
          
             try
             {
                 // Read the form data.
                 await Request.Content.ReadAsMultipartAsync(provider);
 
-                SaveAttchment(provider);
-
-                List<string> returns = new List<string>();
-                // This illustrates how to get the file names.
-                foreach (MultipartFileData file in provider.FileData)
-                {                    
-                    Trace.WriteLine(file.Headers.ContentDisposition.FileName);
-                    Trace.WriteLine("Server file path: " + file.LocalFileName);
-
-                    //file.Headers.ContentDisposition.n
-                    long length = file.Headers.ContentLength ?? 0;
-
-
-                    returns.Add(file.LocalFileName);
-                }
+                List<string> returns = SaveAttchment(provider, folder);             
                 
                 return Request.CreateResponse(HttpStatusCode.OK, returns);
             }

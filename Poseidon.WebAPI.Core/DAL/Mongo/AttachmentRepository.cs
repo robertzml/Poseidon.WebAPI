@@ -42,9 +42,10 @@ namespace Poseidon.WebAPI.Core.DAL.Mongo
             entity.FileName = doc["fileName"].ToString();
             entity.Extension = doc["extension"].ToString();
             entity.ContentType = doc["contentType"].ToString();
-            entity.Path = doc["path"].ToString();
+            entity.Folder = doc["folder"].ToString();
             entity.Size = doc["size"].ToInt32();
             entity.UploadTime = doc["uploadTime"].ToLocalTime();
+            entity.MD5Hash = doc["md5hash"].ToString();
             entity.Remark = doc["remark"].ToString();
 
             return entity;
@@ -63,9 +64,10 @@ namespace Poseidon.WebAPI.Core.DAL.Mongo
                 { "fileName", entity.FileName },
                 { "extension", entity.Extension },
                 { "contentType", entity.ContentType },
-                { "path", entity.Path },
+                { "folder", entity.Folder },
                 { "size", entity.Size },
                 { "uploadTime", entity.UploadTime },
+                { "md5hash", entity.MD5Hash },
                 { "remark", entity.Remark }
             };
 

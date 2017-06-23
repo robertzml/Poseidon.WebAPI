@@ -18,6 +18,8 @@ namespace Poseidon.WebAPI.Client
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
+
+            GlobalAction.Initialize();
         }
     }
 }
