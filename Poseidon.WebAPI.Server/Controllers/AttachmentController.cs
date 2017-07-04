@@ -9,8 +9,8 @@ namespace Poseidon.WebAPI.Server.Controllers
 {
     using Poseidon.Base.Framework;
     using Poseidon.Common;
-    using Poseidon.WebAPI.Core.BL;
-    using Poseidon.WebAPI.Core.DL;
+    using Poseidon.Attachment.Core.BL;
+    using Poseidon.Attachment.Core.DL;
 
     /// <summary>
     /// 附件控制器
