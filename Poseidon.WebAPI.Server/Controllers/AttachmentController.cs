@@ -27,6 +27,20 @@ namespace Poseidon.WebAPI.Server.Controllers
             var data = BusinessFactory<AttachmentBusiness>.Instance.FindAll();
             return Ok(data);
         }
+
+        /// <summary>
+        /// 获取指定附件
+        /// </summary>
+        /// <param name="id">ID</param>
+        /// <returns></returns>
+        public IHttpActionResult GetById(string id)
+        {
+            var data = BusinessFactory<AttachmentBusiness>.Instance.FindById(id);
+            if (data == null)
+                return NotFound();
+
+            return Ok(data);
+        }
         #endregion //Action
     }
 }

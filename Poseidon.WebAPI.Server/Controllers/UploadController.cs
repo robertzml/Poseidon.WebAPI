@@ -40,9 +40,9 @@ namespace Poseidon.WebAPI.Server.Controllers
         /// <param name="provider"></param>
         /// <param name="folder">保存文件夹</param>
         /// <returns></returns>
-        private List<string> SaveAttchment(PoseidonMultipartFormDataStreamProvider provider, string folder)
+        private List<Attachment> SaveAttchment(PoseidonMultipartFormDataStreamProvider provider, string folder)
         {
-            List<string> results = new List<string>();
+            List<Attachment> data = new List<Attachment>();
 
             foreach (MultipartFileData file in provider.FileData)
             {
@@ -68,21 +68,26 @@ namespace Poseidon.WebAPI.Server.Controllers
 
                     if (attachment.MD5Hash != md5)
                     {
-                        results.Add("文件哈希计算不匹配");
+                        throw new Exception("文件哈希计算不匹配");
                         continue;
                     }
                 }
 
                 var attchment = BusinessFactory<AttachmentBusiness>.Instance.Create(attachment);
-                results.Add(attachment.Id);
+                data.Add(attachment);
             }
 
-            return results;
+            return data;
         }
         #endregion //Function
 
         #region Action
-        public async Task<HttpResponseMessage> PostFormData()
+        /// <summary>
+        /// 上传附件
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<HttpResponseMessage> PostFileData()
         {
             // Check if the request contains multipart/form-data.
             if (!Request.Content.IsMimeMultipartContent())
@@ -95,8 +100,8 @@ namespace Poseidon.WebAPI.Server.Controllers
 
             var path = HttpContext.Current.Server.MapPath("~" + root + "//" + folder);
 
-            if (!Directory.Exists(root))
-                Directory.CreateDirectory(root);
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
 
             var provider = new PoseidonMultipartFormDataStreamProvider(path);
 
@@ -105,7 +110,7 @@ namespace Poseidon.WebAPI.Server.Controllers
                 // Read the form data.
                 await Request.Content.ReadAsMultipartAsync(provider);
 
-                List<string> returns = SaveAttchment(provider, folder);
+                var returns = SaveAttchment(provider, folder);
 
                 return Request.CreateResponse(HttpStatusCode.OK, returns);
             }

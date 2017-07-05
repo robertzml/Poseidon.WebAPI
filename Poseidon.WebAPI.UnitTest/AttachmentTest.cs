@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Reflection;
 
 namespace Poseidon.WebAPI.UnitTest
 {
@@ -21,8 +22,11 @@ namespace Poseidon.WebAPI.UnitTest
         #region Constructor
         public AttachmentTest()
         {
-            Cache.Instance.Add("DALPrefix", "Mongo");
+            // 设置连接字符串
             Cache.Instance.Add("ConnectionString", "mongodb://localhost:27017");
+
+            // 设置数据库类型
+            Cache.Instance.Add("DALPrefix", "Mongo");
         }
         #endregion //Constructor
 
