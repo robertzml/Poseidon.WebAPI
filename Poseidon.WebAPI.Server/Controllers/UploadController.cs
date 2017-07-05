@@ -40,14 +40,14 @@ namespace Poseidon.WebAPI.Server.Controllers
         /// <param name="provider"></param>
         /// <param name="folder">保存文件夹</param>
         /// <returns></returns>
-        private List<Attachment> SaveAttchment(PoseidonMultipartFormDataStreamProvider provider, string folder)
+        private IEnumerable<Attachment> SaveAttchment(PoseidonMultipartFormDataStreamProvider provider, string folder)
         {
             List<Attachment> data = new List<Attachment>();
 
             foreach (MultipartFileData file in provider.FileData)
             {
                 Attachment attachment = new Attachment();
-
+                                
                 attachment.Name = file.Headers.GetValues("name").ToList().First();
                 attachment.FileName = Path.GetFileName(file.LocalFileName);
                 attachment.Extension = Path.GetExtension(file.LocalFileName);

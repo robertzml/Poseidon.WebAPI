@@ -22,10 +22,12 @@ namespace Poseidon.WebAPI.Server.Controllers
         /// 获取所有附件
         /// </summary>
         /// <returns></returns>
-        public IHttpActionResult Get()
+        public HttpResponseMessage Get()
         {
             var data = BusinessFactory<AttachmentBusiness>.Instance.FindAll();
-            return Ok(data);
+
+            HttpResponseMessage response = Request.CreateResponse(HttpStatusCode.OK, data);
+            return response;
         }
 
         /// <summary>
@@ -33,13 +35,16 @@ namespace Poseidon.WebAPI.Server.Controllers
         /// </summary>
         /// <param name="id">ID</param>
         /// <returns></returns>
-        public IHttpActionResult GetById(string id)
+        public HttpResponseMessage GetById(string id)
         {
             var data = BusinessFactory<AttachmentBusiness>.Instance.FindById(id);
             if (data == null)
-                return NotFound();
+                return Request.CreateResponse(HttpStatusCode.NotFound);
 
-            return Ok(data);
+            //return Ok(data);
+
+            HttpResponseMessage response = Request.CreateResponse(HttpStatusCode.OK, data);
+            return response;
         }
         #endregion //Action
     }
