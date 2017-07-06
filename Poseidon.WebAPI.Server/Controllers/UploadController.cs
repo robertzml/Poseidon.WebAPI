@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
@@ -40,44 +41,36 @@ namespace Poseidon.WebAPI.Server.Controllers
         /// <param name="provider"></param>
         /// <param name="folder">保存文件夹</param>
         /// <returns></returns>
-        private IEnumerable<Attachment> SaveAttchment(PoseidonMultipartFormDataStreamProvider provider, string folder)
+        private Attachment SaveAttchment(PoseidonMultipartFormDataStreamProvider provider, string folder)
         {
-            List<Attachment> data = new List<Attachment>();
+            MultipartFileData file = provider.FileData[0];
 
-            foreach (MultipartFileData file in provider.FileData)
+            Attachment attachment = new Attachment();
+            attachment.FileName = Path.GetFileName(file.LocalFileName);
+            attachment.OriginName = file.Headers.ContentDisposition.FileName;
+            attachment.Extension = Path.GetExtension(file.LocalFileName);
+            attachment.ContentType = file.Headers.ContentType.MediaType;
+            attachment.UploadTime = DateTime.Now;
+            attachment.Size = new FileInfo(file.LocalFileName).Length;
+            attachment.Folder = folder;
+            attachment.MD5Hash = Hasher.GetFileMD5Hash(file.LocalFileName);
+
+            if (file.Headers.Contains("md5hash"))
             {
-                Attachment attachment = new Attachment();
-                                
-                attachment.Name = file.Headers.GetValues("name").ToList().First();
-                attachment.FileName = Path.GetFileName(file.LocalFileName);
-                attachment.Extension = Path.GetExtension(file.LocalFileName);
-                attachment.ContentType = file.Headers.ContentType.MediaType;
-                attachment.UploadTime = DateTime.Now;
-                attachment.Size = new FileInfo(file.LocalFileName).Length;
-                attachment.Folder = folder;
-                attachment.MD5Hash = Hasher.GetFileMD5Hash(file.LocalFileName);
+                string md5 = file.Headers.GetValues("md5hash").ToList().First();
 
-                if (file.Headers.Contains("remark"))
-                    attachment.Remark = file.Headers.GetValues("remark").ToList().First();
-                else
-                    attachment.Remark = "";
-
-                if (file.Headers.Contains("md5hash"))
+                if (attachment.MD5Hash != md5)
                 {
-                    string md5 = file.Headers.GetValues("md5hash").ToList().First();
-
-                    if (attachment.MD5Hash != md5)
-                    {
-                        throw new Exception("文件哈希计算不匹配");
-                        continue;
-                    }
+                    throw new Exception("文件哈希计算不匹配");
                 }
-
-                var attchment = BusinessFactory<AttachmentBusiness>.Instance.Create(attachment);
-                data.Add(attachment);
             }
 
-            return data;
+            attachment.Name = provider.FormData["name"];
+            attachment.Remark = provider.FormData["remark"];
+
+            BusinessFactory<AttachmentBusiness>.Instance.Create(attachment);
+
+            return attachment;
         }
         #endregion //Function
 
@@ -109,15 +102,48 @@ namespace Poseidon.WebAPI.Server.Controllers
             {
                 // Read the form data.
                 await Request.Content.ReadAsMultipartAsync(provider);
+                if (provider.FileData.Count == 0)
+                    return Request.CreateResponse(HttpStatusCode.Forbidden);
 
-                var returns = SaveAttchment(provider, folder);
+                var attachment = SaveAttchment(provider, folder);
 
-                return Request.CreateResponse(HttpStatusCode.OK, returns);
+                return Request.CreateResponse(HttpStatusCode.OK, attachment);
             }
             catch (System.Exception e)
             {
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, e);
             }
+        }
+
+        /// <summary>
+        /// 下载附件
+        /// </summary>
+        /// <param name="id">附件ID</param>
+        /// <returns></returns>
+        [HttpGet]
+        public HttpResponseMessage DownloadFile(string id)
+        {
+            var attachment = BusinessFactory<AttachmentBusiness>.Instance.FindById(id);
+            if (attachment == null) //文件不存在
+                return Request.CreateResponse(HttpStatusCode.NotFound);
+
+            string root = AppConfig.GetAppSetting("UploadPath");
+            string folder = HttpContext.Current.Server.MapPath("~" + root + "//" + attachment.Folder);
+            string path = folder + "//" + attachment.FileName;
+
+            if (!File.Exists(path)) //文件已删除
+                return Request.CreateResponse(HttpStatusCode.Gone);
+
+            FileStream fs = new FileStream(path, FileMode.Open);
+            var response = new HttpResponseMessage(HttpStatusCode.OK);
+            response.Content = new StreamContent(fs);
+            response.Content.Headers.ContentType = new MediaTypeHeaderValue(attachment.ContentType);
+            response.Content.Headers.ContentType.CharSet = "utf-8";
+            response.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment");
+            response.Content.Headers.ContentDisposition.FileName = attachment.OriginName;
+            response.Content.Headers.Add("md5hash", attachment.MD5Hash);
+
+            return response;
         }
         #endregion //Action
     }
