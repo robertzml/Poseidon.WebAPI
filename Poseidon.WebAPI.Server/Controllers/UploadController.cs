@@ -80,7 +80,7 @@ namespace Poseidon.WebAPI.Server.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost]
-        public async Task<HttpResponseMessage> PostFileData()
+        public async Task<HttpResponseMessage> PostFileDataAsync()
         {
             // Check if the request contains multipart/form-data.
             if (!Request.Content.IsMimeMultipartContent())

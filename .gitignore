@@ -287,3 +287,4 @@ __pycache__/
 *.odx.cs
 *.xsd.cs
 /Poseidon.WebAPI.Client/App_Data/Upload
+/Poseidon.WebAPI.Server/App_Data/Upload
