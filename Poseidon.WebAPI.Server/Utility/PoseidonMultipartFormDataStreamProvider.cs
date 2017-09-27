@@ -36,7 +36,7 @@ namespace Poseidon.WebAPI.Server.Utility
 
             var filename = Path.GetFileName(filePath);
             var name = Guid.NewGuid().ToString();
-            var extension = Path.GetExtension(filePath);
+            var extension = Path.GetExtension(filePath).ToLower();
             var contentType = headers.ContentType.MediaType;
 
             return name + extension;
