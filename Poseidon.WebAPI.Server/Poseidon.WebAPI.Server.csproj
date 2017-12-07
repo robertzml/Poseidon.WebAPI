@@ -53,8 +53,8 @@
       <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Poseidon.Attachment.Core">
-      <HintPath>..\..\Assembly\Poseidon.Attachment.Core.dll</HintPath>
+    <Reference Include="Poseidon.Archives.Core">
+      <HintPath>..\..\Assembly\Poseidon.Archives.Core.dll</HintPath>
     </Reference>
     <Reference Include="Poseidon.Base">
       <HintPath>..\..\Assembly\Poseidon.Base.dll</HintPath>
@@ -243,9 +243,6 @@
     <Content Include="packages.config" />
     <None Include="Project_Readme.html" />
     <Content Include="Scripts\jquery-1.10.2.min.map" />
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

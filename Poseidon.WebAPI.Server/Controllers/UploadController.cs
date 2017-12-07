@@ -14,8 +14,8 @@ namespace Poseidon.WebAPI.Server.Controllers
 {
     using Poseidon.Base.Framework;
     using Poseidon.Common;
-    using Poseidon.Attachment.Core.BL;
-    using Poseidon.Attachment.Core.DL;
+    using Poseidon.Archives.Core.BL;
+    using Poseidon.Archives.Core.DL;
     using Poseidon.WebAPI.Server.Utility;
 
     /// <summary>
@@ -93,8 +93,8 @@ namespace Poseidon.WebAPI.Server.Controllers
 
             var path = HttpContext.Current.Server.MapPath("~" + root + "//" + folder);
 
-            if (!Directory.Exists(path))
-                Directory.CreateDirectory(path);
+            if (!System.IO.Directory.Exists(path))
+                System.IO.Directory.CreateDirectory(path);
 
             var provider = new PoseidonMultipartFormDataStreamProvider(path);
 

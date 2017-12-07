@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Reflection;
+using System.Net.Http;
 
 namespace Poseidon.WebAPI.UnitTest
 {
@@ -44,6 +46,36 @@ namespace Poseidon.WebAPI.UnitTest
             var data = bl.FindAll();
 
             Assert.IsTrue(data.Count() > 0);
+        }
+
+        [TestMethod]
+        public void TestUpload()
+        {
+            string[] files = new string[] { "E:/Test/poseidon.http" , "E:/Test/dashboard.ejs" };
+
+            var message = new HttpRequestMessage();
+            var content = new MultipartFormDataContent();
+
+            foreach (var file in files)
+            {
+                var filestream = new FileStream(file, FileMode.Open);
+                var fileName = System.IO.Path.GetFileName(file);
+                content.Add(new StreamContent(filestream), "file", fileName);
+            }
+
+            message.Method = HttpMethod.Post;
+            message.Content = content;
+            message.RequestUri = new Uri("http://localhost:4341/api/attachment/");
+
+            var client = new HttpClient();
+            client.SendAsync(message).ContinueWith(task =>
+            {
+                Assert.IsTrue(task.Result.IsSuccessStatusCode);
+                if (task.Result.IsSuccessStatusCode)
+                {
+                    //do something with response
+                }
+            });
         }
         #endregion //Test
     }

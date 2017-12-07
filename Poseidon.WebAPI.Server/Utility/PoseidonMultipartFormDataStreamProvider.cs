@@ -30,14 +30,11 @@ namespace Poseidon.WebAPI.Server.Utility
         {
             string filePath = headers.ContentDisposition.FileName;
 
-            // Multipart requests with the file name seem to always include quotes.
-            if (filePath.StartsWith(@"""") && filePath.EndsWith(@""""))
-                filePath = filePath.Substring(1, filePath.Length - 2);
+            filePath = filePath.Replace(@"""", string.Empty);
 
             var filename = Path.GetFileName(filePath);
             var name = Guid.NewGuid().ToString();
             var extension = Path.GetExtension(filePath).ToLower();
-            var contentType = headers.ContentType.MediaType;
 
             return name + extension;
         }
