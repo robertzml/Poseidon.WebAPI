@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
+using System.Net.Http.Headers;
 
 namespace Poseidon.WebAPI.Server.Controllers
 {
@@ -137,6 +138,60 @@ namespace Poseidon.WebAPI.Server.Controllers
             {
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, e);
             }
+        }
+
+        /// <summary>
+        /// 下载附件
+        /// </summary>
+        /// <param name="id">附件ID</param>
+        /// <returns></returns>
+        [Route("api/attachment/download/{id}")]
+        [HttpGet]
+        public HttpResponseMessage DownloadFile(string id)
+        {
+            var attachment = BusinessFactory<AttachmentBusiness>.Instance.FindById(id);
+            if (attachment == null) //文件不存在
+                return Request.CreateResponse(HttpStatusCode.NotFound);
+
+            string root = AppConfig.GetAppSetting("UploadPath");
+            string folder = HttpContext.Current.Server.MapPath("~" + root + "//" + attachment.Folder);
+            string path = folder + "//" + attachment.FileName;
+
+            if (!File.Exists(path)) //文件已删除
+                return Request.CreateResponse(HttpStatusCode.Gone);
+
+            FileStream fs = new FileStream(path, FileMode.Open);
+            var response = new HttpResponseMessage(HttpStatusCode.OK);
+            response.Content = new StreamContent(fs);
+            response.Content.Headers.ContentType = new MediaTypeHeaderValue(attachment.ContentType);
+            response.Content.Headers.ContentType.CharSet = "utf-8";
+            response.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment");
+            response.Content.Headers.ContentDisposition.FileName = attachment.OriginName;
+            response.Content.Headers.Add("md5hash", attachment.MD5Hash);
+
+            return response;
+        }
+
+        /// <summary>
+        /// 删除附件
+        /// </summary>
+        /// <param name="id">附件ID</param>
+        /// <returns></returns>
+        [Route("api/attachment/delete/{id}")]
+        [HttpGet]
+        public HttpResponseMessage DeleteFile(string id)
+        {
+            var attachment = BusinessFactory<AttachmentBusiness>.Instance.FindById(id);
+            if (attachment == null) //文件不存在
+                return Request.CreateResponse(HttpStatusCode.NotFound);
+
+            string root = AppConfig.GetAppSetting("UploadPath");
+            string folder = HttpContext.Current.Server.MapPath("~" + root + "//" + attachment.Folder);
+            string path = folder + "//" + attachment.FileName;
+
+            File.Delete(path);
+
+            return Request.CreateResponse(HttpStatusCode.OK);
         }
         #endregion //Action
     }
