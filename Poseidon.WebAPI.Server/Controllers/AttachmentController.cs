@@ -191,6 +191,8 @@ namespace Poseidon.WebAPI.Server.Controllers
 
             File.Delete(path);
 
+            BusinessFactory<AttachmentBusiness>.Instance.Delete(id);
+
             return Request.CreateResponse(HttpStatusCode.OK);
         }
         #endregion //Action
