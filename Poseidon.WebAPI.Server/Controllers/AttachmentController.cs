@@ -26,10 +26,11 @@ namespace Poseidon.WebAPI.Server.Controllers
         /// <summary>
         /// 生成保存文件夹
         /// </summary>
+        /// <param name="module">模块名</param>
         /// <returns></returns>
-        private string GeneratePath()
+        private string GeneratePath(string module)
         {
-            string folder = string.Format("{0}-{1:D2}", DateTime.Now.Year, DateTime.Now.Month);
+            string folder = string.Format("{0}/{1}-{2:D2}", module, DateTime.Now.Year, DateTime.Now.Month);
 
             return folder;
         }
@@ -113,8 +114,13 @@ namespace Poseidon.WebAPI.Server.Controllers
                 throw new HttpResponseException(HttpStatusCode.UnsupportedMediaType);
             }
 
+            var module = "Default";
+            var headerModule = Request.Headers.GetValues("module").ToList();
+            if (headerModule.Count > 0)
+                module = headerModule[0];
+
             string root = AppConfig.GetAppSetting("UploadPath");
-            var folder = GeneratePath();
+            var folder = GeneratePath(module);
 
             var path = HttpContext.Current.Server.MapPath("~" + root + "//" + folder);
 
