@@ -155,27 +155,36 @@ namespace Poseidon.WebAPI.Server.Controllers
         [HttpGet]
         public HttpResponseMessage DownloadFile(string id)
         {
-            var attachment = BusinessFactory<AttachmentBusiness>.Instance.FindById(id);
-            if (attachment == null) //文件不存在
-                return Request.CreateResponse(HttpStatusCode.NotFound);
+            try
+            {
+                Logger.Instance.Info("下载文件:" + id);
+                var attachment = BusinessFactory<AttachmentBusiness>.Instance.FindById(id);
+                if (attachment == null) //文件不存在
+                    return Request.CreateResponse(HttpStatusCode.NotFound);
 
-            string root = AppConfig.GetAppSetting("UploadPath");
-            string folder = HttpContext.Current.Server.MapPath("~" + root + "//" + attachment.Folder);
-            string path = folder + "//" + attachment.FileName;
+                string root = AppConfig.GetAppSetting("UploadPath");
+                string folder = HttpContext.Current.Server.MapPath("~" + root + "//" + attachment.Folder);
+                string path = folder + "//" + attachment.FileName;
 
-            if (!File.Exists(path)) //文件已删除
-                return Request.CreateResponse(HttpStatusCode.Gone);
+                if (!File.Exists(path)) //文件已删除
+                    return Request.CreateResponse(HttpStatusCode.Gone);
 
-            FileStream fs = new FileStream(path, FileMode.Open);
-            var response = new HttpResponseMessage(HttpStatusCode.OK);
-            response.Content = new StreamContent(fs);
-            response.Content.Headers.ContentType = new MediaTypeHeaderValue(attachment.ContentType);
-            response.Content.Headers.ContentType.CharSet = "utf-8";
-            response.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment");
-            response.Content.Headers.ContentDisposition.FileName = attachment.OriginName;
-            response.Content.Headers.Add("md5hash", attachment.MD5Hash);
+                FileStream fs = new FileStream(path, FileMode.Open);
+                var response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StreamContent(fs);
+                response.Content.Headers.ContentType = new MediaTypeHeaderValue(attachment.ContentType);
+                response.Content.Headers.ContentType.CharSet = "utf-8";
+                response.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment");
+                response.Content.Headers.ContentDisposition.FileName = attachment.OriginName;
+                response.Content.Headers.Add("md5hash", attachment.MD5Hash);
 
-            return response;
+                return response;
+            }
+            catch(Exception e)
+            {
+                Logger.Instance.Exception("下载文件出错", e);
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, e);
+            }
         }
 
         /// <summary>
